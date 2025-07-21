@@ -32,4 +32,4 @@ conn.commit()
 cursor.close()
 conn.close()
 
-print("✅ Inserted 10 rows into tickets table!")
+print("Inserted 10 rows into tickets table!")

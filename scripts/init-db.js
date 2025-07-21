@@ -27,7 +27,7 @@ async function init() {
         date_created DATE NOT NULL,
         date_closed DATE,
         status TEXT NOT NULL CHECK (status IN ('Open', 'Open External', 'Closed')),
-        external_supplier TEXT,
+        ext_support TEXT,
         problem_id INTEGER REFERENCES problems(problem_id) ON DELETE SET NULL,
         requestor TEXT,
         severity TEXT NOT NULL CHECK (severity IN ('3-Basic', '2-Important', '1-Critical')),

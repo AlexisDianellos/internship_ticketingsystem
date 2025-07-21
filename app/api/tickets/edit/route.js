@@ -13,7 +13,6 @@ try {
   });
 }
 
-
     const secretHeader = request.headers.get('x-secret');//secret for sec
     const secretEnv = process.env.NEXT_PUBLIC_API_SECRET_KEY;
 

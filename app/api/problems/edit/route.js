@@ -20,36 +20,37 @@ export async function PATCH(request) {
       comments,
     } = data;
 
-    const res = await db.query(
-      `UPDATE problems
-       SET problem_description = $1,
-           date_started = $2,
-           date_closed = $3,
-           status = $4,
-           type = $5,
-           impact = $6,
-           ext_support = $7,
-           comments = $8
-       WHERE problem_id = $9
-       RETURNING *`,
-      [
-        problem_description,
-        date_started,
-        date_closed,
-        status,
-        type,
-        impact,
-        ext_support,
-        comments,
-        problem_id,
-      ]
-    );
+    const pool = await db.getDbPool();
+    const requestSQL = pool.request();
 
-    if (res.rowCount === 0) {
+    requestSQL.input('problem_id', problem_id);
+    requestSQL.input('problem_description', problem_description);
+    requestSQL.input('date_started', date_started);
+    requestSQL.input('date_closed', date_closed);
+    requestSQL.input('status', status);
+    requestSQL.input('type', type);
+    requestSQL.input('impact', impact);
+    requestSQL.input('ext_support', ext_support);
+    requestSQL.input('comments', comments);
+
+    const result = await requestSQL.query(`
+      UPDATE problems
+      SET problem_description = @problem_description,
+          date_started = @date_started,
+          date_closed = @date_closed,
+          status = @status,
+          type = @type,
+          impact = @impact,
+          ext_support = @ext_support,
+          comments = @comments
+      WHERE problem_id = @problem_id;
+    `);
+
+    if (result.rowsAffected[0] === 0) {
       return new Response(JSON.stringify({ error: 'Problem not found' }), { status: 404 });
     }
 
-    return new Response(JSON.stringify(res.rows[0]), { status: 200 });
+    return new Response(JSON.stringify({ success: true }), { status: 200 });
   } catch (err) {
     console.error('Error editing problem:', err);
     return new Response(JSON.stringify({ error: 'Failed to update problem' }), { status: 500 });

@@ -10,6 +10,7 @@ export default function ProblemTable({ problems }) {
   const [expandedProblem, setExpandedProblem] = useState(null);
   const [editingProblem, setEditingProblem] = useState(null);
   const [problemToDelete, setProblemToDelete] = useState(null);
+  const [problemList,setProblemList]=useState(problems);
 
   const handleExpand = (problem) => {
     setExpandedProblem(problem);
@@ -37,6 +38,9 @@ export default function ProblemTable({ problems }) {
       });
       if (res.ok) {
         setProblemToDelete(null);
+        setProblemList((prev) =>
+          prev.filter((p) => p.problem_id !== problemToDelete.problem_id)
+        );
       } else {
         alert('Failed to delete problem');
       }
@@ -47,6 +51,15 @@ export default function ProblemTable({ problems }) {
 
   const handleEdit = (problem) => {
     setEditingProblem(problem);
+  };
+
+  const handleEditSave = (updatedProblem) => {
+    setProblemList((prev) =>
+      prev.map((p) =>
+        p.problem_id === updatedProblem.problem_id ? updatedProblem : p
+      )
+    );
+    setEditingProblem(null);
   };
 
   return (
@@ -123,7 +136,7 @@ export default function ProblemTable({ problems }) {
       )}
 
       {editingProblem && (
-        <EditProblemForm problem={editingProblem} setEditingProblem={setEditingProblem} />
+        <EditProblemForm problem={editingProblem} setEditingProblem={setEditingProblem} onEditSave={handleEditSave}/>
       )}
 
       {problemToDelete && (

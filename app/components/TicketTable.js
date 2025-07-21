@@ -3,14 +3,17 @@ import { useState } from 'react';
 
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
+
 import EditTicketForm from './EditTicketForm';
 
 
-export default function TicketTable({ tickets }) {
+export default function TicketTable({ tickets,setTickets,layout }) {
   const [ticketToDelete, setTicketToDelete] = useState(null);
   const [expandedTicket, setExpandedTicket] = useState(null);
   const [editingTicket, setEditingTicket] = useState(null);
+  const [ticketToClose, setTicketToClose] = useState(null);
 
   const handleEdit = (ticket) => {
     setEditingTicket(ticket);
@@ -45,6 +48,9 @@ export default function TicketTable({ tickets }) {
   },
       });
       if (res.ok) {
+        setTickets((prevTickets) =>
+          prevTickets.filter((t) => t.ticket_no !== ticketToDelete.ticket_no)
+        );
         setTicketToDelete(null);
       } else {
         alert('Failed to delete ticket');
@@ -54,9 +60,38 @@ export default function TicketTable({ tickets }) {
     }
   };
 
+  const confirmClose = async ()=>{
+    if (!ticketToClose) return;
+    try{
+      const fullTicket={...ticketToClose,status:'Closed'};
+
+      const res = await fetch('/api/tickets/edit', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json',
+      'x-secret': process.env.NEXT_PUBLIC_API_SECRET_KEY
+        },
+        body: JSON.stringify(fullTicket),
+      });
+
+      if (res.ok) {
+        setTickets((prevTickets) =>
+          prevTickets.map((t) =>
+            t.ticket_no === ticketToClose.ticket_no ? fullTicket : t
+          )
+        );
+        setTicketToClose(null);
+      } else {
+        alert('Failed to close ticket');
+      }
+
+    }catch(error){
+      alert('Error closing ticket');
+    }
+  }
+
   return (
     <>
-      <div className="mx-auto flex flex-col justify-center items-center">
+      <div className={layout==='grid'?"grid grid-cols-3 gap-7":"mx-auto flex flex-col justify-center items-center"}>
         {tickets.map((ticket) => (
           <div
             key={ticket.ticket_no}
@@ -65,7 +100,11 @@ export default function TicketTable({ tickets }) {
             <h1 className="text-gray-800 font-bold cursor-pointer mb-5"
             onClick={() => handleExpand(ticket)}
             >{(ticket.ticket_type?.trim() === '' || ticket.ticket_type?.trim() === '-') ? 'Ticket' : ticket.ticket_type} (#{ticket.ticket_no})</h1>
-            <p className="text-gray-600">{ticket.description}</p>
+            <p className="text-gray-600">
+            {(ticket.description || '').length > 60
+              ? (ticket.description || '').slice(0, 60) + '...'
+              : (ticket.description || '-')}
+            </p>
              <div className="flex justify-between items-center mt-2">
               <div className="flex space-x-2">
                 <IconButton 
@@ -84,6 +123,16 @@ export default function TicketTable({ tickets }) {
                 >
                   <DeleteIcon />
                 </IconButton>
+                
+                <IconButton 
+                  aria-label="close" 
+                  sx={{ color: '#802828' }}
+                  onClick={() => setTicketToClose(ticket)}
+                  size="small"
+                >
+                  <CloseIcon fontSize="medium" />
+                </IconButton>
+
               </div>
               <p className="text-sm text-black font-medium">
                 {ticket.requestor || 'Unidentified'}
@@ -127,7 +176,7 @@ export default function TicketTable({ tickets }) {
       )}
 
       {editingTicket && (
-        <EditTicketForm ticket={editingTicket} setEditingTicket={setEditingTicket} />
+        <EditTicketForm ticket={editingTicket} setEditingTicket={setEditingTicket} setTickets={setTickets} />
       )}
 
       {ticketToDelete && (
@@ -150,6 +199,36 @@ export default function TicketTable({ tickets }) {
                 </button>
                 <button
                   onClick={() => setTicketToDelete(null)}
+                  className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded text-white cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {ticketToClose && (
+        <>
+          <div
+            className="fixed inset-0 bg-gray bg-opacity-50 backdrop-blur-sm z-40"
+            onClick={() => setTicketToClose(null)}
+          />
+          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+            <div className="relative bg-gray-300 p-6 rounded-2xl max-w-md text-gray-200 w-full max-h-[90vh]">
+              <h2 className="text-xl font-bold mb-4 text-center text-black">
+                Are you sure you want to close ticket #{ticketToClose.ticket_no}?
+              </h2>
+              <div className="flex justify-center space-x-4">
+                <button
+                  onClick={confirmClose}
+                  className="bg-[#802828] px-4 py-2 rounded text-white cursor-pointer"
+                >
+                  Yes, Close
+                </button>
+                <button
+                  onClick={() => setTicketToClose(null)}
                   className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded text-white cursor-pointer"
                 >
                   Cancel

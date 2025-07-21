@@ -1,26 +1,31 @@
 import db from '@/lib/db';
 
-export async function GET() {
+export async function GET(req) {
   try {
     const pool = await db.getDbPool();
 
-    // Fetch latest open tickets
+    const { searchParams } = new URL(req.url);
+    const offset = parseInt(searchParams.get('offset') || '0', 10);
+    const limit = parseInt(searchParams.get('limit') || '40', 10);
+
     const openTicketsResult = await pool.request()
       .query(`
-        SELECT TOP 10 * 
+        SELECT * 
         FROM ticket 
         WHERE LTRIM(RTRIM(LOWER(status))) IN ('open', 'open extended')
-        ORDER BY [date_created] DESC;
+        ORDER BY [date_created] DESC, [ticket_no] DESC, [description] DESC
+        OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY;
       `);
 
-    // Fetch latest open critical tickets (example: severity = '3 - Basic')
+    //2 - Important instead of 1-Critial bc no one has ever made critical tickets
     const criticalTicketsResult = await pool.request()
       .query(`
-        SELECT TOP 10 *
+        SELECT *
         FROM ticket
         WHERE LTRIM(RTRIM(LOWER(status))) IN ('open', 'open extended')
         AND REPLACE(LTRIM(RTRIM(LOWER(severity))), ' ', '') = '2-important'
-        ORDER BY [date_created] DESC;
+        ORDER BY [date_created] DESC, [ticket_no] DESC, [description] DESC
+        OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY;
       `);
 
     const responseData = {

@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import AutoCompleteDropdown from './AutoCompleteComponent';
 
 export default function CreateProblemForm({ onCreate,showCreateProblemForm,setShowCreateProblemForm}) {
   
@@ -19,6 +20,13 @@ export default function CreateProblemForm({ onCreate,showCreateProblemForm,setSh
     ext_support: '',
     comments: '',
   });
+
+  
+  const problemImpact = [
+    "High",
+    "Med",
+    "Low"
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -70,6 +78,19 @@ export default function CreateProblemForm({ onCreate,showCreateProblemForm,setSh
                   <option key={option} value={option}>{option}</option>
                 ))}
               </select>
+            ):key==='impact'?(
+               <select
+                id={key}
+                name={key}
+                value={value}
+                onChange={handleChange}
+                className="w-full p-2 border rounded bg-gray-400"
+              >
+                <option value="">Select Impact</option>
+                {problemImpact.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
             ) : key === 'date_started' || key === 'date_closed' ? (
               <input
                 type="date"
@@ -79,7 +100,12 @@ export default function CreateProblemForm({ onCreate,showCreateProblemForm,setSh
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-400 rounded bg-gray-400"
               />
-            ) : (
+            ): key === 'ext_support' ? (
+              <AutoCompleteDropdown
+                type="extsupport"
+                value={value}
+                onChange={(val) => setTicket((prev) => ({ ...prev, [key]: val }))}
+              />):(
               <input
                 type="text"
                 id={key}

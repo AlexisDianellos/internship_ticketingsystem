@@ -1,13 +1,15 @@
 'use client';
 import React from 'react';
+import AutoCompleteDropdown from './AutoCompleteComponent';
 
-export default function EditTicketForm({ ticket, setEditingTicket }) {
+export default function EditTicketForm({ ticket, setEditingTicket,setTickets }) {
   
   const selectOptions={
   ticket_type : ['Problem', 'User mgm', 'Request'],
   status : ['Open', 'Open External', 'Closed'],
   severity : ['1-Critical', '2-Important', '3-Basic'],
-  shop : ['CityLink', 'Cosmos', 'E-shop', 'Golden', 'Mall', 'Paiania', 'Amerikis', 'Valaoritou', 'Tsimiski', 'ola'],
+  shop : ['CityLink', 'Cosmos', 'E-Shop', 'Golden', 'Mall', 'Paiania', 'Amerikis', 'Valaoritou', 'Tsimiski', 'ola'],
+  problem_type:['SW','HW'],
 };
   
   const handleChange = (e) => {
@@ -19,7 +21,7 @@ export default function EditTicketForm({ ticket, setEditingTicket }) {
   };
 
   const handleSubmit = async (e) => {
-    
+    e.preventDefault();
     if (!ticket || Object.keys(ticket).length === 0) {
     alert('No ticket data to send.');
     return;
@@ -34,6 +36,13 @@ export default function EditTicketForm({ ticket, setEditingTicket }) {
     });
 
     if (res.ok) {
+
+      setTickets((prevTickets) =>
+        prevTickets.map((t) =>
+          t.ticket_no === ticket.ticket_no ? { ...t, ...ticket } : t
+        )
+      );
+
       setEditingTicket(null);
     } else {
       alert('Failed to update ticket');
@@ -57,9 +66,6 @@ export default function EditTicketForm({ ticket, setEditingTicket }) {
   return `${year}-${month}-${day}`;
 }
 
-
-
-
   return (
     <>
       <div
@@ -80,20 +86,42 @@ export default function EditTicketForm({ ticket, setEditingTicket }) {
             X
           </button>
 
-          {Object.entries(ticket).map(([key, value]) => {
+{Object.entries(ticket).map(([key, value]) => {
   if (key === 'created_at' || key === 'ticket_no') return null;
 
   const label = key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
   const isDateField = key.includes('date');
-  const isDropdown = Object.keys(selectOptions).includes(key);
 
   return (
     <div key={key} className="mb-4">
       <label htmlFor={key} className="block text-sm mb-1">
         {label}
       </label>
-
-      {isDropdown ? (
+      {key === 'requestor' ? (
+        <AutoCompleteDropdown
+          type="requestor"
+          value={value || ''}
+          onChange={(val) =>
+            setEditingTicket((prev) => ({ ...prev, [key]: val }))
+          }
+        />
+      ) : key === 'resolver' ? (
+        <AutoCompleteDropdown
+          type="resolver"
+          value={value || ''}
+          onChange={(val) =>
+            setEditingTicket((prev) => ({ ...prev, [key]: val }))
+          }
+        />
+      ) : key === 'ext_support' ? (
+        <AutoCompleteDropdown
+          type="extsupport"
+          value={value || ''}
+          onChange={(val) =>
+            setEditingTicket((prev) => ({ ...prev, [key]: val }))
+          }
+        />
+      ) : selectOptions[key] ? (
         <select
           id={key}
           name={key}

@@ -1,17 +1,21 @@
 'use client';
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import AutoCompleteDropdown from './AutoCompleteComponent';
 
 export default function CreateTicketForm({
   onCreate,
   showCreateTicketForm,
   setShowCreateTicketForm
 }) {
+
+  const [nextTicketNo,setNextTicketNo]=useState('');
+
   const examples = {
-    ticket_no: 'eg. 1 - Check current ticket number',
-    period: 'eg. 202506',
+    ticket_no: `${nextTicketNo}`,
+    period: '202507',
     date_created: 'eg. 2025-06-26',
     date_closed: 'eg. 2025-07-01',
     external_supplier: 'eg. Singular etc. - if needed',
@@ -31,8 +35,9 @@ export default function CreateTicketForm({
   const statusOptions = ['Open', 'Open External', 'Closed'];
   const severityOptions = ['1-Critical', '2-Important', '3-Basic'];
   const shopOptions = ['CityLink', 'Cosmos', 'E-shop', 'Golden', 'Mall', 'Paiania', 'Amerikis', 'Valaoritou', 'Tsimiski', 'ola'];
-
+  const problemTypeOptions = ['SW','HW']
   const requiredFields = ['ticket_no', 'ticket_type', 'severity', 'shop', 'period', 'requestor'];
+  const [missingFields, setMissingFields] = useState([]);
 
   const [ticket, setTicket] = useState({
     ticket_no: '',
@@ -55,6 +60,31 @@ export default function CreateTicketForm({
     resolver: '',
     description: '',
   });
+      useEffect(() => {
+        async function fetchLatestTicketNoAndProblems() {
+          try {
+            const res = await fetch('/api/tickets/latest-num');
+            if (!res.ok) throw new Error('Failed to fetch latest ticket number');
+            const data = await res.json();
+            setNextTicketNo(data.ticket_no ? Number(data.ticket_no) + 1 : 0);
+            setTicket(prev => ({...prev,ticket_no: data.ticket_no ? Number(data.ticket_no) + 1 : 0}));
+            setTicket(prev => ({ ...prev, period: examples.period }));
+
+            const resProblems = await fetch('/api/problems/latest');
+            if (!resProblems.ok) throw new Error('Failed to fetch problems');
+            const dataProblems = await resProblems.json();
+            setProblems(dataProblems); // Assuming array of { id, title }
+
+          } catch (err) {
+            console.error('Error fetching latest ticket number:', err);
+            setError('Could not fetch latest ticket number. Please enter manually.');
+          }
+        }
+
+        if (showCreateTicketForm) {
+          fetchLatestTicketNoAndProblems();
+        }
+  }, [showCreateTicketForm]);
 
   const [error, setError] = useState('');
 
@@ -66,10 +96,12 @@ export default function CreateTicketForm({
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setMissingFields([]);
 
     // Required field validation
-    const missing = requiredFields.filter((key) => !ticket[key]?.trim());
+    const missing = requiredFields.filter((key) => !ticket[key]?.toString().trim());
     if (missing.length > 0) {
+      setMissingFields(missing);
       setError(`Please fill in all required fields: ${missing.join(', ')}`);
       return;
     }
@@ -109,13 +141,13 @@ export default function CreateTicketForm({
       resolver: '',
       description: '',
     });
+    setMissingFields([]);
   };
+
+  const [problems,setProblems]=useState([]); //latest problems by id in the form
 
   return (
     <>
-    <div className="max-w-[20.5rem] mb-2 text-red-700 font-semibold text-center">
-        {error}
-      </div>
     <form
       onSubmit={handleSubmit}
       className="bg-gray-300 p-6 rounded mb-6 text-black space-y-7 lg:w-1/2 md:w-1/2 relative"
@@ -136,7 +168,10 @@ export default function CreateTicketForm({
 
         return (
           <div key={key}>
-            <label htmlFor={key} className="block mb-1 text-sm font-medium">
+            <label
+              htmlFor={key}
+              className={`block mb-1 text-sm font-medium ${missingFields.includes(key) ? 'text-red-500' : ''}`}
+            >
               {label}{isRequired ? ' *' : ''}
             </label>
 
@@ -144,7 +179,7 @@ export default function CreateTicketForm({
               <select
                 id={key}
                 name={key}
-                value={value}
+                value={value?? ''}
                 onChange={handleChange}
                 className="w-full p-2 border rounded bg-gray-400"
               >
@@ -157,7 +192,7 @@ export default function CreateTicketForm({
               <select
                 id={key}
                 name={key}
-                value={value}
+                value={value?? ''}
                 onChange={handleChange}
                 className="w-full p-2 border rounded bg-gray-400"
               >
@@ -170,7 +205,7 @@ export default function CreateTicketForm({
               <select
                 id={key}
                 name={key}
-                value={value}
+                value={value?? ''}
                 onChange={handleChange}
                 className="w-full p-2 border rounded bg-gray-400"
               >
@@ -183,7 +218,7 @@ export default function CreateTicketForm({
               <select
                 id={key}
                 name={key}
-                value={value}
+                value={value?? ''}
                 onChange={handleChange}
                 className="w-full p-2 border rounded bg-gray-400"
               >
@@ -197,16 +232,64 @@ export default function CreateTicketForm({
                 id={key}
                 type="date"
                 name={key}
-                value={value}
+                value={value?? ''}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-400 rounded bg-gray-400"
               />
-            ) : (
+            ) : key === 'requestor' ? (
+              <AutoCompleteDropdown
+                type="requestor"
+                value={value?? ''}
+                onChange={(val) => setTicket((prev) => ({ ...prev, [key]: val }))}
+              />
+            ) : key === 'resolver' ? (
+              <AutoCompleteDropdown
+                type="resolver"
+                value={value?? ''}
+                onChange={(val) => setTicket((prev) => ({ ...prev, [key]: val }))}
+              />
+            ) : key === 'external_supplier' ? (
+              <AutoCompleteDropdown
+                type="extsupport"
+                value={value|| ''}
+                onChange={(val) => setTicket((prev) => ({ ...prev, [key]: val }))}
+              />
+            ):key==='problem'?(
+              <select
+                id={key}
+                name={key}
+                value={value?? ''}
+                onChange={handleChange}
+                className="w-full p-2 border rounded bg-gray-400"
+              >
+                <option value="">Select Problem Type</option>
+                {problemTypeOptions.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            ):key==='problem_id'?(
+                <select
+                  id={key}
+                  name={key}
+                  value={value || ''}
+                  onChange={handleChange}
+                  className="w-full p-2 border rounded bg-gray-400"
+                >
+                  <option value="">Select problem</option>
+                  {problems.map((problem) => (
+                    <option key={problem.id} value={problem.id}>
+                      {problem.problem_id} / {problem.status}
+                    </option>
+                  ))}
+                </select>
+            )
+            
+            : (
               <input
                 id={key}
                 type="text"
                 name={key}
-                value={value}
+                value={value?? ''}
                 placeholder={examples[key] || label}
                 onChange={handleChange}
                 className="w-full p-2 border rounded bg-gray-400"
@@ -225,6 +308,9 @@ export default function CreateTicketForm({
         </button>
       </div>
     </form>
+    <div className="max-w-[20.5rem] mb-2 text-red-700 font-semibold text-center">
+      {error}
+    </div>
     </>
   );
 }
