@@ -232,7 +232,7 @@ const filteredSearchResults = searchResults.sort((a, b) => Number(b.ticket_no) -
           {filteredOpenTickets.length > 0 && (
             <div className="w-full lg:w-1/2 mb-8">
               <h2 className="text-xl font-semibold mb-4 text-[#802828] text-center">
-                🆕 New
+                New
               </h2>
               <TicketTable tickets={openTickets} setTickets={setTickets}/>
             </div>
@@ -241,7 +241,7 @@ const filteredSearchResults = searchResults.sort((a, b) => Number(b.ticket_no) -
           {filteredCriticalTickets.length > 0 && (
             <div className="w-full lg:w-1/2 mb-8">
               <h2 className="text-xl font-semibold mb-4 text-[#802828] text-center">
-                🚨 Important
+                Important
               </h2>
               <TicketTable tickets={criticalTickets} setTickets={setTickets}/>
             </div>
