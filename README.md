@@ -1,36 +1,15 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+Attica Internal IT Ticketing System
 
-## Getting Started
+During my internship at Attica DPS, I noticed a recurring frustration: every day my coworkers were struggling with the company’s outdated system for managing IT tickets in EXCEL. Most requests were being tracked manually in Excel sheets, which led to inefficiencies, miscommunication, and delays in resolving technical issues.
 
-First, run the development server:
+After discussing these challenges with colleagues from SAP\ users to IT technicians in shops and in close collaboration with the company’s Head of IT
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+I designed and built a modern internal ticketing platform tailored to Attica’s unique needs.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Unlike other solutions, this system was customized for BI,SAP users, Store IT technitians, IT admins.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+This personalization ensured that each department had a ticketing experience built around their daily workflow, rather than forcing everyone into a template.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The result was a platform that replaced the clunky Excel process with an efficient, scalable, and user-friendly system. Adoption spread company-wide during my internship, significantly improving IT support response times and making issue-tracking transparent across teams.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project not only strengthened my technical skills in web application development but also gave me experience in requirements gathering, cross-department collaboration, and agile delivery in a real enterprise environment.
